@@ -1,72 +1,47 @@
+/*
+ * This Arduino UNO R4 code was developed by newbiely.com
+ *
+ * This Arduino UNO R4 code is made available for public use without any restriction
+ *
+ * For comprehensive instructions and wiring diagrams, please visit:
+ * https://newbiely.com/tutorials/arduino-uno-r4/arduino-uno-r4-dht11
+ */
 
+#include <DHT.h>
+#define DHT11_PIN 2 // The Arduino UNO R4 pin connected to DHT11
 
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#include <dht11.h>
-#define DHT11PIN 7
-
-dht11 DHT11;
-
-
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-
-#define OLED_RESET 4
-//Adafruit_SH1106 display(OLED_RESET);
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT);  
-
-#define BLUE 0x001F
-
-
+DHT dht11(DHT11_PIN, DHT11);
 
 void setup() {
-
-
- // display.begin(SH1106_SWITCHCAPVCC, 0x3C);
-   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  
-  delay(2000);
-  display.clearDisplay();
-  display.setTextColor(SSD1306_WHITE);
- //  display.setTextColor(BLUE);
+  Serial.begin(9600);
+  dht11.begin(); // initialize the sensor
 }
 
 void loop() {
+  // wait a few seconds between measurements.
+  delay(3000);
 
+  // read humidity
+  float humidity  = dht11.readHumidity();
+  // read temperature as Celsius
+  float tempC = dht11.readTemperature();
+  // read temperature as Fahrenheit
+  float tempF = dht11.readTemperature(true);
 
-  int chk = DHT11.read(DHT11PIN);
+  // check if any reads failed
+  if (isnan(humidity) || isnan(tempC) || isnan(tempF)) {
+    Serial.println("Failed to read from DHT11 sensor!");
+  } else {
+    Serial.print("DHT11# Humidity: ");
+    Serial.print(humidity);
+    Serial.print("%");
 
-  float Humidity = DHT11.humidity;
-  float temperature = DHT11.temperature;
+    Serial.print("  |  "); 
 
-
-
-
-  display.clearDisplay();
-
-  // display temperature
-  display.setTextSize(1);
-  display.setCursor(0,7);
-  //display.setTextColor(BLUE);
-  display.print("Temperature: ");
-  display.setTextSize(2);
-  display.setCursor(0,16);
-  display.print(temperature);
-  display.print(" ");
-  display.setTextSize(1);
-  display.cp437(true);
-  display.write(167);
-  display.setTextSize(2);
-  display.print("C");
-  
-  // display humidity
-  display.setTextSize(1);
-  display.setCursor(0, 37);
-  display.print("Humidity: ");
-  display.setTextSize(2);
-  display.setCursor(0, 50);
-  display.print(Humidity);
-  display.print(" %"); 
-  
-  display.display(); 
+    Serial.print("Temperature: ");
+    Serial.print(tempC);
+    Serial.print("°C ~ ");
+    Serial.print(tempF);
+    Serial.println("°F");
+  }
 }
